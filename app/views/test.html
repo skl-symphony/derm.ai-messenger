@@ -1,0 +1,63 @@
+<!-- Facebook SDK for Javascript -->
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '{{ fb_app_id}}',
+      xfbml      : true,
+      version    : 'v2.6'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div id="wrapper">
+  <div class="container">
+    <div class="row">
+    	<h1>Derm.ai</h1>
+    </div>
+    <hr>
+    <div class="row">
+    	Description goes here
+    </div>
+    <hr>
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Send-to-Messenger</h2>
+        <center>
+            <!-- Initiate chatting via the Send-To-Messenger Plugin -->
+          <div class="fb-send-to-messenger"
+              messenger_app_id="{{ fb_app_id }}"
+              page_id="{{ fb_page_id }}"
+              data-ref="pandemic-legacy-test-app"
+              color="blue"
+              size="xlarge"
+              style="margin-right: -70px; padding-top: 7px;">
+          </div>
+        </center>
+      </div>
+    </div>
+    <div class="row mb-30">
+      <div class="col-md-12">
+        <h2 style="margin-top: 45px; margin-bottom: 0px;">Message-Us</h2>
+        <center>
+            <!-- Initiate chatting via the Message-Us Plugin -->
+          <div class="fb-messengermessageus"
+              messenger_app_id="{{ fb_app_id }}"
+              page_id="{{ fb_page_id }}"
+              data-ref="pandemic-legacy-test"
+              color="blue"
+              size="xlarge"
+              style="padding-top: 7px;">
+          </div>
+        </center>
+      </div>
+    </div>
+  </div>
+</div>
