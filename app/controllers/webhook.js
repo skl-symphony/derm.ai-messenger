@@ -109,7 +109,15 @@ router.post('/webhook/', function (req, res) {
     // Handle opt-in via the Send-to-Messenger Plugin, store user data and greet the user by name
     if (event.optin) {
       userNamePromise.then(function(userName) {
-        fb.sendGreeting(sender, userName.first_name);
+        Patient.findOne({
+          firstName: userName.first_name,
+          lastName: userName.last_name,
+          fbId: userName.id
+        }).then(patient => {
+          patient.conversationState = 'greeting';
+          patient.save();
+          fb.sendGreeting(sender, userName.first_name);
+        }).catch(err => console.error("error"));
       });
     }
 
