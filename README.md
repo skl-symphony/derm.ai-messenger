@@ -9,3 +9,9 @@ We live in a volatile time where the potential of health care access may become 
 ### Actions by Patients
 Patients sign liability form through Docusign
 Patients upload photo through messenger
+Patients text doctors through our anonymous phone number proxy server
+
+### Actions by Doctors
+Doctors have a dashboard through the web application where they upload documents that their patients need to fill out prior to their appointment to save time.
+Doctors have a dashboard through the web application where they label the images to help us train our models further. This uses majority consensus resolution to properly label the image datapoint. This newly labelled data help us further train our classification model.
+Doctors have 

@@ -35,7 +35,6 @@ const stateMap = {
     'i have signed the form': 'processingForm',
   },
 
-  // need to work out the kinks of the async logic here - we send our own static message to update the state
   'requestImage': {
     'image': 'diagnosing', // not a user message - image to our own message
     'no': 'imageRequestRefusal',
@@ -62,32 +61,14 @@ const stateMap = {
   'requestOrGetCurrentLocation': {
     '*': 'queryDoctors',
   },
-  // 'getCurrentLocation': {
-  //   'yes': 'queryDoctors',
-  //   'no': 'requestLocation',
-  // },
-  // 'requestLocation': {
-  //   'address': '',
-  // },
   'queryDoctors': {
     'done': 'finalRequest',
   },
-  
-  // TODO: clean up this logic
-  // 'findNearbyDoctors': {
-  //   'address': 'requestCurrentLocation',
-  //   'no address': 'requestAnotherAddress'
-  // },
-  // 'requestCurrentLocation': 'requestUseOfAddress',
-  // 'requestAnotherAddress': '',
-
-  // contact people
-
 
   'finalRequest': {
     'yes': '', // TODO: fill out branch logic here
     'no': 'goodbye',
-  },
+  }
 };
 
 const stateToMethodCallMap = {

@@ -3,6 +3,8 @@ const rp = require('request-promise');
 const base64Img = require('base64-img');
 
 const config = require('../../config/config');
+// Models
+const Image = require('../models/image');
 
 const fbFactory = {
 
@@ -46,7 +48,7 @@ const fbFactory = {
           "elements": [{
             "title": "Docusign",
             "subtitle": "Docusign liability waiver",
-            "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
+            "image_url": "http://kokuanetwork.com/wp-content/uploads/2015/06/approval-clipart-1195423550187356949molumen_red_approved_stamp.svg_.med_.png",
             "buttons": [{
               "type": "web_url",
               "url": "https://www.messenger.com/",
@@ -69,11 +71,11 @@ const fbFactory = {
     // async process here to check if OK
     fbFactory.sendTextMessage(sender, PROCESSING_FORM);
     setTimeout(function () {
-      fbFactory.sendTextMessage(sender, PROCESSING_FORM_THANK_YOU)
+      fbFactory.sendTextMessage(sender, PROCESSING_FORM_THANK_YOU);
+      setTimeout(function () {
+        fbFactory.sendTextMessage(sender, REQUEST_IMAGE);
+      }, 500);
     }, 500);
-    setTimeout(function () {
-      fbFactory.sendTextMessage(sender, REQUEST_IMAGE);
-    }, 1000);
     return 'requestImage';
   },
 
@@ -96,7 +98,16 @@ const fbFactory = {
       base64Img.requestBase64(imageUrl, function(err, res, body) {
         // TODO: potentially remove the prefix
         console.log('Base64 Image: inside body');
+        // save the image in mongodb
+        const image = new Image({
+          patientId: patient._id,
+          encodedImage: body,
+        });
+        image.save();
+        // send the encoded image to Mike's server
         setTimeout(function () {
+          // image.classification = 
+          // image.save();
           fbFactory.sendPositiveDiagnosticResults(sender, patient);
         }, 2000);
       });  

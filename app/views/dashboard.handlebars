@@ -1,0 +1,31 @@
+<div id="wrapper">
+  <div class="container">
+    <div class="row">
+      <h3>Dashboard</h3>
+      <br>
+      <div id="map" style="height: 500px;"></div>
+      <!-- <div>Patients: {{ patients }}</div> -->
+      <!-- <div>Doctors: {{ doctors }}</div> -->
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+  (function initMap() {
+    const map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: 37.4773593, lng: -122.1628795 },
+      zoom: 12
+    });
+
+    function createMarker(position, title) {
+      return new google.maps.Marker({
+        position: myLatLng,
+        map: map,
+        title: title,
+      });
+    }
+
+    console.log(window, 'window');
+  })();
+</script>

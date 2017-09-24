@@ -30,7 +30,12 @@ const config = {
   // Telesign Keys
   telesignCustomerId: process.env.TELESIGN_CUSTOMER_ID || '',
   telesignApiKey: process.env.TELESIGN_API_KEY || '',
-  telesignRestEndpoint: process.env.TELESIGN_REST_ENDPOINT || 'https://rest-api.telesign.com',
+  telesignRestEndpoint: process.env.TELESIGN_REST_ENDPOINT || '',
+
+  // Docusign Keys
+  docusignEmail: process.env.DOCUSIGN_EMAIL || '',
+  docusignPassword: process.env.DOCUSIGN_PASSWORD || '',
+  docusignIntegratorKey: process.env.DOCUSIGN_KEY || '',
 };
 
 // app ID - 119918588671791
