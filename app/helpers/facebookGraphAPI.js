@@ -1,11 +1,15 @@
 const request = require('request');
 const rp = require('request-promise');
 const base64Img = require('base64-img');
+const argv = require('minimist')(process.argv.slice(2));
 
 const config = require('../../config/config');
 // Models
 const Image = require('../models/image');
 const Doctor = require('../models/doctor');
+
+const ESIGN = "https://sandbox.esignlive.com/a/transaction/bqnQAnOzejcQpxgywZjQKXOChmE=/sign";
+const DOCUSIGN = "https://demo.docusign.net/Signing/?ti=3fd1f51bc3054b1f99cd9f473049b06c";
 
 const fbFactory = {
 
@@ -40,6 +44,7 @@ const fbFactory = {
   },
 
   sendLiabilityForm: function (sender) {
+    console.log(argv, 'argv');
     const FORM_INSTRUCTIONS = "Please follow the link to sign the form and text OK, when you are completed.";
     const payload = {
       "attachment": {
@@ -47,12 +52,12 @@ const fbFactory = {
         "payload": {
           "template_type": "generic",
           "elements": [{
-            "title": "Docusign",
-            "subtitle": "Docusign liability waiver",
+            "title": "Liability Waiver",
+            "subtitle": "Derm.ai is not liable for any actions influenced by the predictions it has made for its patients.",
             "image_url": "http://kokuanetwork.com/wp-content/uploads/2015/06/approval-clipart-1195423550187356949molumen_red_approved_stamp.svg_.med_.png",
             "buttons": [{
               "type": "web_url",
-              "url": "https://demo.docusign.net/Signing/?ti=b7535ec3c0784a009c851935cda81d5a",
+              "url": argv.doc === 'e' ? ESIGN : DOCUSIGN,
               "title": "Sign waiver"
             }],
           }]
@@ -146,7 +151,7 @@ const fbFactory = {
   },
 
   sendInconclusiveDiagnosticResults: function (sender, patient) {
-    const INCONCLUSIVE_DIAGNOSTIC_RESULTS = "It looks like this area may potential be of concern. You should probably consult a medical professional to validate.";
+    const INCONCLUSIVE_DIAGNOSTIC_RESULTS = "It looks like this area may potential be of concern. You should probably consult a medical professional to validate this diagnosis.";
     fbFactory.sendTextMessage(sender, INCONCLUSIVE_DIAGNOSTIC_RESULTS);
     // set Patient conversation state
     const conversationState = 'inconclusiveDiagnosticResults';
@@ -156,7 +161,7 @@ const fbFactory = {
   },
 
   sendPositiveDiagnosticResults: function (sender, patient, value, klass) {
-    const POSITIVE_DIAGNOSTIC_RESULTS = `It looks like there is a high ${value}% chance this area may potentially be of concern. It looks like ${klass}. You should probably consult a medical professional to validate.`;
+    const POSITIVE_DIAGNOSTIC_RESULTS = `It looks like there is a high ${value}% chance this area may potentially be of concern. It looks like ${klass}. You should probably consult a medical professional to validate this diagnosis.`;
     fbFactory.sendTextMessage(sender, POSITIVE_DIAGNOSTIC_RESULTS);
     patient.diagnosed = klass;
     patient.save();
@@ -180,7 +185,7 @@ const fbFactory = {
   },
 
   sendRequestOrGetCurrentLocation: function (sender, patient) {
-    const GET_CURRENT_LOCATION = "Please send your current location.";
+    const GET_CURRENT_LOCATION = "Please send me your current location.";
     const payload = {
       text: GET_CURRENT_LOCATION,
       "quick_replies": [{ "content_type":"location" }],
@@ -191,8 +196,8 @@ const fbFactory = {
   sendQueryDoctors: function (sender, patient) {
     // create list of doctors with postback to doctor's contact info
     // create the proxy phone numbers
-    const LIST_DOCTORS = "Here are a list of doctors to talk to around your area.";
-    const DOCTOR_CONTACT_RULES = "These phone numbers are proxies to maintain your and the medical professional's personal phone numbers anonymity. Type DONE to continue our conversation.";
+    const LIST_DOCTORS = "Here are a list of doctors to talk to around your area ranked by reputation.";
+    const DOCTOR_CONTACT_RULES = "Please type DONE to continue our conversation.";
     fbFactory.sendTextMessage(sender, LIST_DOCTORS);
     Doctor.find({})
       .then(doctors => {
