@@ -7,10 +7,8 @@ const doctorSchema = new Schema({
 	updatedAt: { type: Date, default: Date.now },
 	firstName: String,
 	lastName: String,
-	fbId: String,
 	email: String,
 	phoneNumber: String,
-	passthrough: String,
 	liabilityWaiverSigned: Boolean,
 	// information for patient recommendations
 	city: String,

@@ -5,6 +5,7 @@ const base64Img = require('base64-img');
 const config = require('../../config/config');
 // Models
 const Image = require('../models/image');
+const Doctor = require('../models/doctor');
 
 const fbFactory = {
 
@@ -51,7 +52,7 @@ const fbFactory = {
             "image_url": "http://kokuanetwork.com/wp-content/uploads/2015/06/approval-clipart-1195423550187356949molumen_red_approved_stamp.svg_.med_.png",
             "buttons": [{
               "type": "web_url",
-              "url": "https://www.messenger.com/",
+              "url": "https://demo.docusign.net/Signing/?ti=b7535ec3c0784a009c851935cda81d5a",
               "title": "Sign waiver"
             }],
           }]
@@ -93,34 +94,35 @@ const fbFactory = {
 
   sendDiagnosing: function (sender, patient, imageUrl) {
     const DIAGNOSING = "Diagnosing...";
-    const DERMAI_CLASSIFICATION_SERVER = "ec2-54-84-217-198.compute-1.amazonaws.com";
+    const DERMAI_CLASSIFICATION_SERVER = "http://ec2-54-84-217-198.compute-1.amazonaws.com/predict";
     const HIGH_LIMIT = 0.8;
     fbFactory.sendTextMessage(sender, DIAGNOSING);
     if (imageUrl) {
-      base64Img.requestBase64(imageUrl, function(err, res, body) {
-        // TODO: potentially remove the prefix
-        console.log('Base64 Image: inside body');
-        // save the image in mongodb
+      base64Img.requestBase64(imageUrl, function(err, res, encodedImage) {
         const image = new Image({
           patientId: patient._id,
-          encodedImage: body,
+          encodedImage: encodedImage,
         });
         image.save();
         // send the encoded image to Mike's server
+        const strippedEncodedImage = encodedImage.slice(22, encodedImage.length);
         request({
           url: DERMAI_CLASSIFICATION_SERVER,
           method: 'POST',
-          json: { image: body }
+          json: true,
+          headers: {
+            'Content-Type': "application/json",
+          },
+          body: { image: strippedEncodedImage }
         }, function(error, response, body) {
+          console.log(body, 'body');
           if (error) {
             console.log('Error sending message: ', error);
-          } else if (response.body.error) {
-            console.log('Error: ', response.body.error);
           }
-          const score = response.body.score;
-          const klass = response.body.class;
+          const score = body.score;
+          const klass = body.class;
           if (score > HIGH_LIMIT) {
-            fbFactory.sendPositiveDiagnosticResults(sender, patient);
+            fbFactory.sendPositiveDiagnosticResults(sender, patient, (score * 100).toFixed(1), klass);
           } else {
             fbFactory.sendNegativeDiagnosticResults(sender, patient);
           }
@@ -153,8 +155,8 @@ const fbFactory = {
     }, 500);
   },
 
-  sendPositiveDiagnosticResults: function (sender, patient) {
-    const POSITIVE_DIAGNOSTIC_RESULTS = "It looks like there is a strong chance this area may potential be of concern. You should probably consult a medical professional to validate.";
+  sendPositiveDiagnosticResults: function (sender, patient, value, klass) {
+    const POSITIVE_DIAGNOSTIC_RESULTS = `It looks like there is a high ${value}% chance this area may potentially be of concern. It looks like ${klass}. You should probably consult a medical professional to validate.`;
     fbFactory.sendTextMessage(sender, POSITIVE_DIAGNOSTIC_RESULTS);
     // set Patient conversation state
     const conversationState = 'positiveDiagnosticResults';
@@ -189,36 +191,56 @@ const fbFactory = {
     // create the proxy phone numbers
     const LIST_DOCTORS = "Here are a list of doctors to talk to around your area.";
     const DOCTOR_CONTACT_RULES = "These phone numbers are proxies to maintain your and the medical professional's personal phone numbers anonymity. Type DONE to continue our conversation.";
-    const payload = {
-      "attachment": {
-        "type": "template",
-        "payload": {
-          "template_type": "list",
-          "top_element_style": "compact",
-          "elements": [
-            {
-              "title": "Mike Wu",
-              "subtitle": "Reputation 50",
-            },
-            {
-              "title": "Stanley Liu",
-              "subtitle": "Reputation 40",
-            },
-            {
-              "title": "Jesse Li",
-              "subtitle": "Reputation 0",
-            }
-          ]
-        }
-      }
-    };
     fbFactory.sendTextMessage(sender, LIST_DOCTORS);
-    setTimeout(function () {
-      fbFactory.sendAttachment(sender, payload);
-      setTimeout(function () {
-        fbFactory.sendTextMessage(sender, DOCTOR_CONTACT_RULES);
-      }, 100);
-    }, 500);
+    Doctor.find({})
+      .then(doctors => {
+        const sortedDoctors = doctors
+          .sort(function (a, b) {
+            return b.reputation - a.reputation; })
+          .map(function (doctor) {
+            return {
+              "title": `Dr. ${doctor.firstName} ${doctor.lastName}`,
+              "subtitle": `Reputation - ${doctor.reputation}   |  +1 ${doctor.phoneNumber}`,
+              "buttons": [{
+                "type": "postback",
+                "title": "Contact",
+                "payload": JSON.stringify(doctor),
+              }]
+            };
+          })
+          .slice(0, 4);
+        const payload = {
+          "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "list",
+              "top_element_style": "compact",
+              "elements": sortedDoctors,
+            }
+          }
+        };
+        fbFactory.sendAttachment(sender, payload);
+        setTimeout(function () {
+          fbFactory.sendTextMessage(sender, DOCTOR_CONTACT_RULES);
+        }, 100);
+      })
+      .catch(err => console.error("error with querying doctors:", err));
+  },
+
+  sendDoctorContactOptions: function (sender, patient, doctor) {
+    const payload = {
+      "text": "Please select a contact option.",
+      "quick_replies": [{
+        "content_type": "postback",
+        "title": "Text",
+        "payload": JSON.stringify(doctor),
+      }, {
+        "content_type": "postback",
+        "title": "Call",
+        "payload": JSON.stringify(doctor),
+      }],
+    };
+    fbFactory.sendAttachment(sender, payload);
   },
 
   sendFinalRequest: function (sender) {

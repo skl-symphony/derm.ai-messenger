@@ -3,7 +3,7 @@ const config = require('../../config/config');
 
 let telesign;
 
-module.exports = {
+const telesignFactory = {
 	initializeTelesignClient: () => {
 		const customerId = config.telesignCustomerId; // find in portal.telesign.com
 		const apiKey = config.telesignApiKey;
@@ -20,35 +20,42 @@ module.exports = {
 	},
 
 	contactDoctor: (patient, doctor) => {
-		const message = `${patient.firstName} ${patient.lastName} would like to schedule an appointment with you, Dr. ${doctor.firstName}.`;
-		this.sendSMSMessage(doctor.phoneNumber, message);
+		const message = `${patient.firstName} ${patient.lastName} would like to schedule an appointment with you, Dr. ${doctor.lastName}. You may reach ${patient.firstName} @ ${patient.phoneNumber}`;
+		telesignFactory.sendSMSMessage(doctor.phoneNumber, message);
 	},
 
 	contactFamily: (patient, customMessage, phoneNumber) => {
 		const defaultMessage = ``;
 		const message = customMessage || defaultMessage;
-		this.sendSMSMessage(phoneNumber, message);
+		telesignFactory.sendSMSMessage(phoneNumber, message);
 	},
 
 	sendSMSMessage: (toPhoneNumber, message) => {
     const phoneNumber = "1" + toPhoneNumber; // Your end user’s phone number, as a string of digits without spaces or
+    // const strippedPhoneNumber = phoneNumber.replace(/\D/g,'');
+    const strippedPhoneNumber = "17605835578";
     const messageType = "ARN"; // ARN = Alerts, Reminders, and Notifications; OTP = One time password; MKT = Marketing
-    const referenceId = null; // need this to check status later
+    let referenceId = Math.round((new Date()).getTime() / 1000);; // need this to check status later
+    console.log(strippedPhoneNumber, 'stripped phone number');
+
     telesign.sms.message(
     	(err, reply) => {
+    		console.log(reply, 'inside telesign callback');
 	      if (err) {
 	        console.log("Error: Could not reach TeleSign's servers");
 	        console.error(err); // network failure likely cause for error
 	      } else {
 	        console.log("YAY!, the SMS message is being sent now by TeleSign!");
 	        console.log(reply);
-	        referenceId=reply.reference_id; // save the reference_id to check status of the message
+	        referenceId = reply.reference_id; // save the reference_id to check status of the message
 	      }
 	    },
-	    phoneNumber,
+	    strippedPhoneNumber,
 	    message,
 	    messageType
 		);
 	},
 
 };
+
+module.exports = telesignFactory;

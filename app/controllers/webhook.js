@@ -5,6 +5,7 @@ const db = require('../models');
 const fb = require('../helpers/facebookGraphAPI');
 const bodyParser = require('body-parser');
 const request = require('request');
+const telesign = require('../helpers/telesign');
 
 const mongoose = require('mongoose');
 
@@ -103,11 +104,10 @@ router.post('/webhook/', function (req, res) {
   for (i = 0; i < messaging_events.length; i++) {
     const event = req.body.entry[0].messaging[i];
     const sender = event.sender.id;
+    const userNamePromise = fb.getUserName(sender);
 
     // Handle opt-in via the Send-to-Messenger Plugin, store user data and greet the user by name
     if (event.optin) {
-      const userNamePromise = fb.getUserName(sender);
-
       userNamePromise.then(function(userName) {
         fb.sendGreeting(sender, userName.first_name);
       });
@@ -116,7 +116,6 @@ router.post('/webhook/', function (req, res) {
     // this is to handle the location
     if (event.message && event.message.attachments) {
       console.log('inside attachments');
-      const userNamePromise = fb.getUserName(sender);
       userNamePromise.then(function(userName) {
         Patient.findOne({
           firstName: userName.first_name,
@@ -159,8 +158,6 @@ router.post('/webhook/', function (req, res) {
 
     // Handle receipt of a message
     if (event.message && event.message.text) {
-      const userNamePromise = fb.getUserName(sender);
-
       // creates patient if does not exist
       // otherwise does nothing
       userNamePromise.then(function(userName) {
@@ -182,7 +179,6 @@ router.post('/webhook/', function (req, res) {
             // continue rest of logic here
             const rawText = event.message.text;
             const text = rawText.toLowerCase();
-            console.log('coordinates', event.message.attachments);
 
             // Handle special keyword 'Generic'
             if (text === 'generic') {
@@ -193,14 +189,11 @@ router.post('/webhook/', function (req, res) {
 
             // TODO: validate the patient conversation state exists in the map
             const newConversationState = stateMap[patient.conversationState][text];
-            console.log('new conversation state', newConversationState);
             if (newConversationState === undefined) {
               return fb.sendLackComprehension(sender);
             }
 
             // save new conversation state
-            console.log('state method to call', stateToMethodCallMap[newConversationState]);
-            console.log('attachments', event.message.attachments);
             // const coordinates = event.message.attachments[0].payload.coordinates;
             const returnedState = stateToMethodCallMap[newConversationState](sender, patient);
             patient.conversationState = returnedState || newConversationState;
@@ -219,9 +212,27 @@ router.post('/webhook/', function (req, res) {
 
     // Handle receipt of a postback
     if (event.postback) {
-      console.log(event.postback, 'event postback');
-      text = JSON.stringify(event.postback);
-      fb.sendTextMessage(sender, "Postback received: "+ rawText.substring(0, 200));
+      // rawText = JSON.stringify(event.postback);
+      // fb.sendTextMessage(sender, "Postback received: "+ rawText.substring(0, 200));
+      userNamePromise.then(function(userName) {
+        Patient.findOne({
+          firstName: userName.first_name,
+          lastName: userName.last_name,
+          fbId: userName.id
+        }).then(patient => {
+          const doctor = JSON.parse(event.postback.payload);
+          console.log('postback doctor obj', doctor);
+          console.log(event.postback, 'event postback');
+          if (event.postback.title === 'Text') {
+            fb.sendTextMessage(sender, `Doctor appointment scheduling scheduled with Dr. ${doctor.firstName} ${doctor.lastName} by texting +1 ${doctor.phoneNumber}`);
+            telesign.contactDoctor(patient, doctor);
+          } else if (event.postback.title === 'Call') {
+
+          } else if (event.postback.title === 'Contact') {
+            fb.sendDoctorContactOptions(sender, patient, doctor);
+          }
+        }).catch(err => console.error("Error:", err));
+      });
       continue;
     }
 
