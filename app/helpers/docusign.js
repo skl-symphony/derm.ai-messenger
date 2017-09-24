@@ -13,8 +13,8 @@ const recipientEmail   = 'stanleykliu92@gmail.com';   // Recipient's Email
 const basePath = "https://demo.docusign.net/restapi";
 
 // configure the document we want signed
-const SignTest1File = "[PATH/TO/DOCUMENT/TEST.PDF]";
-var envelopeId = '';
+const SignTest1File = "../../public/pdfs/liability-waiver.doc";
+var envelopeId = '41b4d09b-57f4-4946-8b48-d47251eaabf0';
 
 // initialize the api client
 const apiClient = new docusign.ApiClient();

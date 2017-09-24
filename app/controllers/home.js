@@ -49,3 +49,45 @@ router.post('/admin/auth', function (req, res, next) {
 		'OK' : 'NOT OK';
 	return res.send(message);
 });
+
+
+// doctor endpoints
+router.post('/doctors', function (req, res, next) {
+	const body = req.body;
+	const newDoctor = new Doctor({
+		firstName: body.firstName,
+		lastName: body.lastName,
+		email: body.email,
+		phoneNumber: body.phoneNumber,
+		city: body.city,
+		state: body.state,
+		zipcode: body.zipcode,
+		reputation: 0,
+	});
+	return newDoctor
+		.save()
+		.then(doctor => {
+			return res.status(200).json(doctor);
+		})
+		.catch(err => console.error("Error saving new doctor"));
+});
+
+// doctor classifies images endpoints
+router.post('/doctors/:id/images', function (req, res, next) {
+	const body = req.body;
+	const newImageLabel = new ImageLabel({
+		imageId: body.imageId,
+		patientId: body.patientId,
+		doctorId: req.params.id,
+		classification: body.classification,
+	});
+	Doctor.findOneAndUpdate({ _id: req.params.id }, { $set: { reputation: 5 } })
+		.then(doctor => console.log('doctor updated'))
+		.catch(err => console.error("error updating doctor"))
+	return newImageLabel
+		.save()
+		.then(imageLabel => {
+			return res.status(200).json(imageLabel);
+		})
+		.catch(err => console.error("Error saving new image label"));
+});

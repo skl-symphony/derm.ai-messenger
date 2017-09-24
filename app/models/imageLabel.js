@@ -7,6 +7,7 @@ const imageLabelSchema = new Schema({
 	updatedAt: { type: Date, deafult: Date. now},
 	imageId: { type: ObjectId, ref: 'Image' },
 	patientId: { type: ObjectId, ref: 'Patient' },
+	doctorId: { type: ObjectId, ref: 'Doctor' },
 	classification: String,
 });
 

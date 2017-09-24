@@ -93,6 +93,8 @@ const fbFactory = {
 
   sendDiagnosing: function (sender, patient, imageUrl) {
     const DIAGNOSING = "Diagnosing...";
+    const DERMAI_CLASSIFICATION_SERVER = "ec2-54-84-217-198.compute-1.amazonaws.com";
+    const HIGH_LIMIT = 0.8;
     fbFactory.sendTextMessage(sender, DIAGNOSING);
     if (imageUrl) {
       base64Img.requestBase64(imageUrl, function(err, res, body) {
@@ -105,12 +107,25 @@ const fbFactory = {
         });
         image.save();
         // send the encoded image to Mike's server
-        setTimeout(function () {
-          // image.classification = 
-          // image.save();
-          fbFactory.sendPositiveDiagnosticResults(sender, patient);
-        }, 2000);
-      });  
+        request({
+          url: DERMAI_CLASSIFICATION_SERVER,
+          method: 'POST',
+          json: { image: body }
+        }, function(error, response, body) {
+          if (error) {
+            console.log('Error sending message: ', error);
+          } else if (response.body.error) {
+            console.log('Error: ', response.body.error);
+          }
+          const score = response.body.score;
+          const klass = response.body.class;
+          if (score > HIGH_LIMIT) {
+            fbFactory.sendPositiveDiagnosticResults(sender, patient);
+          } else {
+            fbFactory.sendNegativeDiagnosticResults(sender, patient);
+          }
+        });
+      });
     } else { // logic branch for testing
       setTimeout(function () {
         fbFactory.sendInconclusiveDiagnosticResults(sender, patient);

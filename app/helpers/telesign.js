@@ -20,7 +20,7 @@ module.exports = {
 	},
 
 	contactDoctor: (patient, doctor) => {
-		const message = `${patient.firstName} ${patient.lastName} would like to schedule an appointment with you.`;
+		const message = `${patient.firstName} ${patient.lastName} would like to schedule an appointment with you, Dr. ${doctor.firstName}.`;
 		this.sendSMSMessage(doctor.phoneNumber, message);
 	},
 
