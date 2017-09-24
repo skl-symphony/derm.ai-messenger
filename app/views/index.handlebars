@@ -19,44 +19,46 @@
 
 <div id="wrapper">
   <div class="container">
-    <div class="row">
-      <h1>Derm.ai</h1>
-    </div>
-    <hr>
-    <div class="row">
-      Description goes here
-    </div>
-    <hr>
-    <div class="row">
-      <div class="col-md-12">
-        <h2>Send-to-Messenger</h2>
-        <center>
-            <!-- Initiate chatting via the Send-To-Messenger Plugin -->
-          <div class="fb-send-to-messenger"
-              messenger_app_id="{{ fb_app_id }}"
-              page_id="{{ fb_page_id }}"
-              data-ref="pandemic-legacy-test-app"
-              color="blue"
-              size="xlarge"
-              style="margin-right: -70px; padding-top: 7px;">
-          </div>
-        </center>
+    <div class="main-section" style="min-height: 500px">
+      <div style="margin-top: 200px;">
+        <p style="font-size: 50px; color: black;"><span style="font-weight: bold; font-size: 50px; color: black;">I‘m Demi,</span> your personal </p>
+        <p style="font-size: 50px; padding-top: 15px; color: black">virtual dermatologist.</p>
       </div>
-    </div>
-    <div class="row mb-30">
-      <div class="col-md-12">
-        <h2 style="margin-top: 45px; margin-bottom: 0px;">Message-Us</h2>
-        <center>
-            <!-- Initiate chatting via the Message-Us Plugin -->
-          <div class="fb-messengermessageus"
-              messenger_app_id="{{ fb_app_id }}"
-              page_id="{{ fb_page_id }}"
-              data-ref="pandemic-legacy-test"
-              color="blue"
-              size="xlarge"
-              style="padding-top: 7px;">
+      <div style='padding-top: 50px; width: 800px; margin: auto; text-align: center;'>
+        <p style='font-size: 25px'>Demi catches early signs of skin diseases, and alerts your doctor.</p>
+        <p style='font-weight: bold; font-size: 25px'>Chat with Demi <u style="text-decoration-color: #0084ff">today</u> in <span style="color: #0084ff">Messenger</span>.</p>
+      </div>
+      <div style='padding-top: 50px'>
+        <div class="row">
+          <div class="col-md-12">
+            <center>
+                <!-- Initiate chatting via the Send-To-Messenger Plugin -->
+              <div class="fb-send-to-messenger"
+                  messenger_app_id="{{ fb_app_id }}"
+                  page_id="{{ fb_page_id }}"
+                  data-ref="pandemic-legacy-test-app"
+                  color="blue"
+                  size="xlarge"
+                  style="margin-right: -70px; padding-top: 7px;">
+              </div>
+            </center>
           </div>
-        </center>
+        </div>
+        <div class="row mb-30">
+          <div class="col-md-12">
+            <center>
+                <!-- Initiate chatting via the Message-Us Plugin -->
+              <div class="fb-messengermessageus"
+                  messenger_app_id="{{ fb_app_id }}"
+                  page_id="{{ fb_page_id }}"
+                  data-ref="pandemic-legacy-test"
+                  color="blue"
+                  size="xlarge"
+                  style="padding-top: 7px;">
+              </div>
+            </center>
+          </div>
+        </div>
       </div>
     </div>
   </div>
