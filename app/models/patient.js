@@ -10,6 +10,7 @@ const patientSchema = new Schema({
 	fbId: String,
 	email: String,
 	phoneNumber: String,
+	diagnosed: String,
 	passthrough: String,
 	conversationState: String,
 	doctorId: { type: ObjectId, ref: 'Doctor' }, // for conversation with a single doctor many to one relation

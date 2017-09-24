@@ -180,11 +180,22 @@ router.post('/webhook/', function (req, res) {
             const rawText = event.message.text;
             const text = rawText.toLowerCase();
 
+            console.log(text, 'text');
+            console.log(event, 'event');
+
             // Handle special keyword 'Generic'
             if (text === 'generic') {
               return fb.sendGenericMessage(sender);
             } else if (text === 'restart') {
               return fb.sendRestart(sender, patient);
+            } else if (text === 'text') {
+              const doctor = JSON.parse(event.message.quick_reply.payload);
+              fb.sendTextMessage(sender, `Doctor appointment scheduling scheduled with Dr. ${doctor.firstName} ${doctor.lastName} by texting +1 ${doctor.phoneNumber}`);
+              return telesign.contactDoctor(patient, doctor, 'text');
+            } else if (text === 'call') {
+              const doctor = JSON.parse(event.message.quick_reply.payload);
+              fb.sendTextMessage(sender, `Doctor appointment scheduling scheduled with Dr. ${doctor.firstName} ${doctor.lastName} by calling +1 ${doctor.phoneNumber}`);
+              return telesign.contactDoctor(patient, doctor, 'call');
             }
 
             // TODO: validate the patient conversation state exists in the map
@@ -225,10 +236,12 @@ router.post('/webhook/', function (req, res) {
           console.log(event.postback, 'event postback');
           if (event.postback.title === 'Text') {
             fb.sendTextMessage(sender, `Doctor appointment scheduling scheduled with Dr. ${doctor.firstName} ${doctor.lastName} by texting +1 ${doctor.phoneNumber}`);
-            telesign.contactDoctor(patient, doctor);
+            telesign.contactDoctor(patient, doctor, 'text');
           } else if (event.postback.title === 'Call') {
-
+            fb.sendTextMessage(sender, `Doctor appointment scheduling scheduled with Dr. ${doctor.firstName} ${doctor.lastName} by calling +1 ${doctor.phoneNumber}`);
+            telesign.contactDoctor(patient, doctor, 'call')
           } else if (event.postback.title === 'Contact') {
+
             fb.sendDoctorContactOptions(sender, patient, doctor);
           }
         }).catch(err => console.error("Error:", err));

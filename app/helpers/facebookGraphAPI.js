@@ -158,6 +158,8 @@ const fbFactory = {
   sendPositiveDiagnosticResults: function (sender, patient, value, klass) {
     const POSITIVE_DIAGNOSTIC_RESULTS = `It looks like there is a high ${value}% chance this area may potentially be of concern. It looks like ${klass}. You should probably consult a medical professional to validate.`;
     fbFactory.sendTextMessage(sender, POSITIVE_DIAGNOSTIC_RESULTS);
+    patient.diagnosed = klass;
+    patient.save();
     // set Patient conversation state
     const conversationState = 'positiveDiagnosticResults';
     setTimeout(function () {
@@ -231,11 +233,11 @@ const fbFactory = {
     const payload = {
       "text": "Please select a contact option.",
       "quick_replies": [{
-        "content_type": "postback",
+        "content_type": "text",
         "title": "Text",
         "payload": JSON.stringify(doctor),
       }, {
-        "content_type": "postback",
+        "content_type": "text",
         "title": "Call",
         "payload": JSON.stringify(doctor),
       }],
